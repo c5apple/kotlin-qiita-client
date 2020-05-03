@@ -1,6 +1,7 @@
 package com.example.kotlin_qiita_client
 
 import android.content.Context
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
@@ -29,6 +30,7 @@ class MainActivity : AppCompatActivity() {
 
         val listView = findViewById<ListView>(R.id.list_view) as ListView
         listView.adapter = mAdapter
+        listView.onItemClickListener = OnItemClickListener()
 
         val editText = findViewById<EditText>(R.id.edit_text) as EditText
         editText.setOnKeyListener(OnKeyListener())
@@ -100,6 +102,21 @@ class MainActivity : AppCompatActivity() {
                 request.enqueue(item)
             }
             return true
+        }
+    }
+
+    private inner class OnItemClickListener : AdapterView.OnItemClickListener {
+        override fun onItemClick(
+            adapterView: AdapterView<*>?,
+            view: View?,
+            position: Int,
+            id: Long
+        ) {
+            val intent = Intent(this@MainActivity, DetailActivity::class.java)
+            // タップされた行番号のデータを取り出す
+            val result: Item? = mAdapter.getItem(position)
+            intent.putExtra("url", result?.url)
+            startActivity(intent)
         }
     }
 }

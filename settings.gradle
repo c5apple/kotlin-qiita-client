@@ -1,0 +1,2 @@
+rootProject.name='kotlin-qiita-client'
+include ':app'

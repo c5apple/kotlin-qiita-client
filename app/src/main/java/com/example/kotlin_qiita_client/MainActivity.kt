@@ -51,11 +51,11 @@ class MainActivity : AppCompatActivity() {
             imageView.setImageBitmap(null) // 残ってる画像を消す（再利用された時）
 
             // 表示する行番号のデータを取り出す
-            val result = getItem(position)
+            val result: Item? = getItem(position)
 
-            Picasso.with(context).load(result.user?.profile_image_url).into(imageView)
-            itemTitleView.text = result.title
-            userNameView.text = result.user?.name
+            Picasso.with(context).load(result?.user?.profile_image_url).into(imageView)
+            itemTitleView.text = result?.title
+            userNameView.text = result?.user?.name
 
             return convertView
         }

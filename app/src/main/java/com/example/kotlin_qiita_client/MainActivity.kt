@@ -3,13 +3,19 @@ package com.example.kotlin_qiita_client
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.TextUtils
+import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.ImageView
-import android.widget.ListView
-import android.widget.TextView
+import android.view.inputmethod.InputMethodManager
+import android.widget.*
 import com.squareup.picasso.Picasso
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.UnsupportedEncodingException
+import java.net.URLEncoder
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,6 +29,9 @@ class MainActivity : AppCompatActivity() {
 
         val listView = findViewById<ListView>(R.id.list_view) as ListView
         listView.adapter = mAdapter
+
+        val editText = findViewById<EditText>(R.id.edit_text) as EditText
+        editText.setOnKeyListener(OnKeyListener())
     }
 
     private inner class ListAdapter(context: Context, resource: Int) :
@@ -49,6 +58,48 @@ class MainActivity : AppCompatActivity() {
             userNameView.text = result.user?.name
 
             return convertView
+        }
+    }
+
+    private inner class OnKeyListener : View.OnKeyListener {
+
+        override fun onKey(view: View, keyCode: Int, keyEvent: KeyEvent): Boolean {
+            if (keyEvent.action != KeyEvent.ACTION_UP || keyCode != KeyEvent.KEYCODE_ENTER) {
+                return false
+            }
+
+            val editText = view as EditText
+            // キーボードを閉じる
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(editText.windowToken, 0)
+
+            var text = editText.text.toString()
+            try {
+                // url encode　例. スピッツ > %83X%83s%83b%83c
+                text = URLEncoder.encode(text, "UTF-8")
+            } catch (e: UnsupportedEncodingException) {
+                Log.e("", e.toString(), e)
+                return true
+            }
+
+            if (!TextUtils.isEmpty(text)) {
+                val request = QiitaClient.create().items(text)
+                Log.d("", request.request().url().toString())
+                val item = object : Callback<List<Item>> {
+                    override fun onResponse(
+                        call: Call<List<Item>>?,
+                        response: Response<List<Item>>?
+                    ) {
+                        mAdapter.clear()
+                        response?.body()?.forEach { mAdapter.add(it) }
+                    }
+
+                    override fun onFailure(call: Call<List<Item>>?, t: Throwable?) {
+                    }
+                }
+                request.enqueue(item)
+            }
+            return true
         }
     }
 }
